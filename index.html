@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101827" />
+  <title>DisplaceOS | Disaster Relief Coordination</title>
+  <link rel="stylesheet" href="style.css" />
+  
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+
+    
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="DisplaceOS home">
+        <span class="brand-mark">D</span><span>Displace<span class="brand-light">OS</span><small>RELIEF COMMAND</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <button class="nav-link active" data-view="overview"><span>▦</span> Overview</button>
+      <button class="nav-link" data-view="incidents"><span>⚑</span> Incident requests <b id="nav-count">4</b></button>
+      <button class="nav-link" data-view="inventory"><span>▤</span> Relief inventory</button>
+      <button class="nav-link" data-view="coordination"><span>⌖</span> Field coordination</button>
+      <div class="sidebar-bottom">
+        <div class="demo-note"><span class="pulse"></span><div><strong>DEMO ENVIRONMENT</strong><small>Sample data · Not live emergency data</small></div></div>
+        <div class="profile"><div class="avatar">AD</div><div><strong>Admin Desk</strong><small>Demo administrator</small></div><span class="dots">•••</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Disaster response <span>/</span> <strong id="page-label">Overview</strong></div>
+        <div class="top-actions"><span class="system-status"><i></i> Systems operational</span><button id="export-btn" class="button button-quiet">↓ Export report</button><button class="user-circle" title="Demo account">AD</button><button
+  type="button"
+  id="dashboard-logout-btn"
+  class="button button-quiet"
+>
+  Sign out
+</button></div>
+      </header>
+
+      <section class="page-heading">
+        <div><div class="eyebrow"><span class="eyebrow-dot"></span> DISASTER RESPONSE NETWORK</div><h1 id="heading">Situation overview</h1><p id="subheading">A shared operational picture for faster, more coordinated relief.</p></div>
+        <div class="heading-right"><span class="demo-badge">● DEMO DATA</span><div class="updated">Last updated <strong id="updated-time">just now</strong></div></div>
+      </section>
+
+      <div class="alert-banner"><span class="alert-icon">!</span><div><strong>Operational note</strong><span>This prototype uses illustrative incidents and locations. Confirm information with authorized responders before acting.</span></div><button id="dismiss-alert" aria-label="Dismiss alert">×</button></div>
+
+      <section class="stats-grid" aria-label="Situation statistics">
+        <article class="stat-card"><div class="stat-top"><span>Open requests</span><span class="stat-icon red">⚑</span></div><div class="stat-number" id="stat-open">04</div><div class="stat-foot"><span class="tiny-dot red-dot"></span> Awaiting action</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Critical priority</span><span class="stat-icon amber">⌁</span></div><div class="stat-number" id="stat-critical">02</div><div class="stat-foot"><span class="tiny-dot amber-dot"></span> Needs urgent review</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Supply categories</span><span class="stat-icon blue">▤</span></div><div class="stat-number" id="stat-supplies">05</div><div class="stat-foot"><span class="tiny-dot blue-dot"></span> Across demo camps</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Requests resolved</span><span class="stat-icon green">✓</span></div><div class="stat-number" id="stat-resolved">03</div><div class="stat-foot"><span class="tiny-dot green-dot"></span> Marked complete</div></article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel map-panel" id="map-section">
+          <div class="panel-heading"><div><h2>Relief operations map</h2><p>Illustrative locations in the Uttarakhand region</p></div><span class="live-pill"><i></i> DEMO MAP</span></div>
+          <div class="map-legend"><span><i class="legend-dot incident"></i> Incident</span><span><i class="legend-dot camp"></i> Relief camp</span><span><i class="legend-dot team"></i> Response team</span></div>
+          <div id="map" role="application" aria-label="Illustrative relief operations map"></div>
+          <div class="map-footer"><span><b>Map note:</b> Pins are sample locations, not verified incident reports.</span><button class="text-button" id="reset-map">Reset view ↗</button></div>
+        </article>
+
+        <article class="panel requests-panel">
+          <div class="panel-heading"><div><h2>Priority requests</h2><p>Review needs and update their status</p></div><button class="text-button" data-view="incidents">View all ↗</button></div>
+          <div class="request-list" id="priority-list"></div>
+          <button class="button button-primary full-button" id="new-request-btn">＋ Register new request</button>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel inventory-panel">
+          <div class="panel-heading"><div><h2>Relief inventory</h2><p>Available quantities in sample stock</p></div><button class="text-button" data-view="inventory">Manage stock ↗</button></div>
+          <div id="inventory-preview" class="inventory-preview"></div>
+        </article>
+        <article class="panel activity-panel">
+          <div class="panel-heading"><div><h2>Coordination log</h2><p>Recent changes in this browser</p></div><span class="activity-count" id="activity-count">3 events</span></div>
+          <div id="activity-list" class="activity-list"></div>
+        </article>
+      </section>
+
+      <section id="full-view" class="panel full-view hidden"></section>
+      <footer>DisplaceOS <span>•</span> Built for Vibeathon 2026 <span>•</span> Prototype using sample data</footer>
+    </main>
+  </div>
+
+  <dialog id="request-dialog" class="request-dialog">
+    <form id="request-form">
+      <div class="dialog-heading"><div><span class="eyebrow">FIELD INTAKE</span><h2>Register a relief request</h2></div><button type="button" class="close-dialog" id="close-dialog" aria-label="Close">×</button></div>
+      <label>Request title<input name="title" required maxlength="90" placeholder="e.g. Drinking water needed at Camp A" /></label>
+      <div class="form-row"><label>Category<select name="category"><option>Food & water</option><option>Medical</option><option>Shelter</option><option>Rescue</option><option>Other</option></select></label><label>Priority<select name="priority"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></label></div>
+      <label>Location / camp<input name="location" required maxlength="80" placeholder="e.g. Demo Camp North" /></label>
+      <label>People affected<input name="people" type="number" min="1" max="100000" value="20" required /></label>
+      <label>Details<textarea name="details" rows="3" maxlength="400" placeholder="Describe the need (avoid private personal information)"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancel-dialog">Cancel</button><button class="button button-primary" type="submit">Create request</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+ 
+
+  <!-- DisplaceOS Welcome / Authentication -->
+  <div id="entry-screen" class="entry-screen">
+    <div class="entry-glow entry-glow-one"></div>
+    <div class="entry-glow entry-glow-two"></div>
+
+    <header class="entry-header">
+      <a class="entry-brand" href="#" aria-label="DisplaceOS home">
+        <span class="entry-logo">D</span>
+        <span>Displace<span class="entry-brand-light">OS</span>
+          <small>RELIEF COMMAND</small>
+        </span>
+      </a>
+      <span class="entry-status"><i></i> DISASTER RESPONSE NETWORK</span>
+    </header>
+
+    <main class="entry-main">
+      <section id="welcome-view" class="entry-view">
+        <div class="entry-eyebrow">COORDINATION THAT MATTERS</div>
+        <h1>When disaster strikes,<br><span>every second matters.</span></h1>
+        <p class="entry-description">
+          Connect affected communities with relief agencies, coordinate
+          resources, and bring critical assistance into one shared workspace.
+        </p>
+
+        <div class="entry-actions">
+          <button type="button" id="enter-btn" class="entry-primary">
+            Enter DisplaceOS <span>→</span>
+          </button>
+          <span class="entry-caption">A coordination platform for relief and recovery</span>
+        </div>
+
+        <div class="entry-feature-grid">
+          <article><span>01</span><h3>Request help</h3><p>Communicate urgent needs.</p></article>
+          <article><span>02</span><h3>Coordinate relief</h3><p>Connect requests and resources.</p></article>
+          <article><span>03</span><h3>Track progress</h3><p>Follow response updates.</p></article>
+        </div>
+        <p class="entry-disclaimer">Prototype · Sample data is not live emergency information.</p>
+      </section>
+
+      <section id="role-view" class="entry-view hidden">
+        <button type="button" class="entry-back" data-entry-back="welcome">← Back</button>
+        <div class="entry-eyebrow">LET'S GET YOU TO THE RIGHT PLACE</div>
+        <h1 class="entry-small-heading">How would you like<br><span>to use DisplaceOS?</span></h1>
+        <p class="entry-description">Choose your path to continue.</p>
+
+        <div class="role-grid">
+          <button type="button" class="role-card" data-role="affected">
+            <span class="role-icon">♡</span>
+            <span class="role-title">I need help</span>
+            <span class="role-description">Request food, water, medical aid, shelter, or rescue assistance.</span>
+            <span class="role-continue">Continue as affected person →</span>
+          </button>
+
+          <button type="button" class="role-card" data-role="agency">
+            <span class="role-icon">⌖</span>
+            <span class="role-title">I'm a helping agency</span>
+            <span class="role-description">Coordinate relief operations and support affected communities.</span>
+            <span class="role-continue">Continue as agency →</span>
+          </button>
+        </div>
+        <p class="entry-disclaimer">Agency access requires authorization. Selecting a role does not grant permissions.</p>
+      </section>
+
+      <section id="login-view" class="entry-view hidden">
+        <button type="button" class="entry-back" data-entry-back="role">← Change role</button>
+        <div class="entry-eyebrow" id="auth-role-label">SECURE ACCOUNT ACCESS</div>
+        <h1 class="entry-small-heading" id="auth-heading">Welcome <span>back.</span></h1>
+        <p class="entry-description" id="auth-description">Sign in to continue to DisplaceOS.</p>
+
+        <div class="entry-auth-card">
+          <div class="auth-mode-tabs">
+            <button type="button" class="auth-mode active" data-auth-mode="login">Sign in</button>
+            <button type="button" class="auth-mode" data-auth-mode="signup">Create account</button>
+          </div>
+
+          <form id="entry-auth-form">
+  <label for="entry-email">Email address</label>
+  <input id="entry-email" type="email" required>
+
+  <label for="entry-password">Password</label>
+  <input
+    id="entry-password"
+    type="password"
+    minlength="8"
+    required
+  >
+
+  <p id="entry-auth-message" role="status" aria-live="polite"></p>
+
+  <button type="submit" id="entry-submit" class="entry-primary entry-submit">
+    Sign in →
+  </button>
+</form>
+          <p class="entry-auth-foot">Your account helps keep requests and coordination connected.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Existing dashboard: retained, hidden until authentication succeeds -->
+  <div id="app-shell" class="app-shell hidden">
+    <!-- MOVE your existing <aside class="sidebar"> ... </main> dashboard markup here -->
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+
+  <h2>DisplaceOS Account</h2>
+  <p>Sign in or create an account to access the platform.</p>
+
+  <form id="auth-form">
+    <label for="auth-email">Email address</label>
+    <input
+      id="auth-email"
+      type="email"
+      placeholder="you@example.com"
+      autocomplete="email"
+      required
+    >
+
+    <label for="auth-password">Password</label>
+    <input
+      id="auth-password"
+      type="password"
+      placeholder="At least 8 characters"
+      autocomplete="current-password"
+      minlength="8"
+      required
+    >
+
+    <button type="button" id="signup-btn">Create account</button>
+    <button type="submit" id="login-btn">Sign in</button>
+    <button type="button" id="logout-btn" hidden>Sign out</button>
+  </form>
+
+  <p id="auth-message" role="status" aria-live="polite">
+    You are not signed in.
+  </p>
+</section>
+</body>
+</html>
